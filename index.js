@@ -22,6 +22,10 @@ const run = async () => {
     const users = client.db("assainment12").collection("users");
     const produckt = client.db("assainment12").collection("produckt");
     const allcatagori = client.db("assainment12").collection("allcatagori");
+    app.get("/allCatagory", async (req, res) => {
+      const catagory = await allcatagori.find({}).toArray();
+      res.send(catagory);
+    });
     app.get("/allproduckt", async (req, res) => {
       const catagor = req.query.catagory;
       console.log(catagor);
