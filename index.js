@@ -20,6 +20,7 @@ const client = new MongoClient(uri, {
 const run = async () => {
   try {
     const users = client.db("assainment12").collection("users");
+    const produckt = client.db("assainment12").collection("produckt");
     app.post("/users", async (req, res) => {
       const user = req.body;
       const email = req.query.email;
@@ -31,6 +32,11 @@ const run = async () => {
         data: rejult,
         token: token,
       });
+    });
+    //produckt post
+    app.post("/produckt", async (req, res) => {
+      const rejult = await produckt.insertOne(req.body);
+      res.send(rejult);
     });
   } finally {
   }
