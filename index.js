@@ -21,6 +21,13 @@ const run = async () => {
   try {
     const users = client.db("assainment12").collection("users");
     const produckt = client.db("assainment12").collection("produckt");
+    const allcatagori = client.db("assainment12").collection("allcatagori");
+    app.get("/allproduckt", async (req, res) => {
+      const catagor = req.query.catagory;
+      console.log(catagor);
+      const data = await produckt.find({ catagory: catagor }).toArray();
+      res.send(data);
+    });
     app.post("/users", async (req, res) => {
       const user = req.body;
       const email = req.query.email;
