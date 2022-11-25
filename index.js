@@ -16,13 +16,36 @@ const client = new MongoClient(uri, {
   useUnifiedTopology: true,
   serverApi: ServerApiVersion.v1,
 });
-
+const jwtVarifi = (req, res, next) => {
+  const authToken = req.headers.authorization;
+  if (!authToken) {
+    return res.status(401).send("request forbeden");
+  }
+  const token = authToken.split(" ")[1];
+  jwttoken.verify(token, process.env.ACCESS_TOKEN, (err, decoded) => {
+    if (err) {
+      return res.send({ authrijation: "forbiden" });
+    }
+    req.decoded = decoded;
+    next();
+  });
+};
 const run = async () => {
   try {
     const users = client.db("assainment12").collection("users");
     const produckt = client.db("assainment12").collection("produckt");
     const allcatagori = client.db("assainment12").collection("allcatagori");
-    app.get("/allCatagory", async (req, res) => {
+    const customars = client.db("assainment12").collection("customars");
+    const varifyAdmin = async (req, res, next) => {
+      const decodedEmail = req.decoded.email;
+      const quary = { email: decodedEmail };
+      const user = await users.findOne(quary);
+      if (!user?.role) {
+        return res.status(403).send({ message: "forbeden" });
+      }
+      next();
+    };
+    app.get("/allCatagory", jwtVarifi, async (req, res) => {
       const catagory = await allcatagori.find({}).toArray();
       res.send(catagory);
     });
@@ -34,19 +57,31 @@ const run = async () => {
     });
     app.post("/users", async (req, res) => {
       const user = req.body;
+
+      const rejult = await users.insertOne(user);
+      res.send({
+        data: rejult,
+        token: "",
+      });
+    });
+    app.get("/users", async (req, res) => {
       const email = req.query.email;
       const token = jwttoken.sign({ email }, process.env.ACCESS_TOKEN, {
         expiresIn: "2h",
       });
-      const rejult = await users.insertOne(user);
+
       res.send({
-        data: rejult,
+        data: "",
         token: token,
       });
     });
     //produckt post
     app.post("/produckt", async (req, res) => {
       const rejult = await produckt.insertOne(req.body);
+      res.send(rejult);
+    });
+    app.post("/customardetails", async (req, res) => {
+      const rejult = await customars.insertOne(req.body);
       res.send(rejult);
     });
   } finally {
