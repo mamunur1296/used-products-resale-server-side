@@ -49,11 +49,38 @@ const run = async () => {
       const catagory = await allcatagori.find({}).toArray();
       res.send(catagory);
     });
+    app.get("/alluerts", async (req, res) => {
+      const user = await users.find({}).toArray();
+      res.send(user);
+    });
+    app.get("/loginUser", async (req, res) => {
+      const loginguser = await users.findOne({ email: req.query.email });
+      res.send(loginguser);
+    });
+
+    app.get("/usersbookings", jwtVarifi, async (req, res) => {
+      const email = req.query.email;
+      const userbooking = await customars
+        .find({ customaremail: email })
+        .toArray();
+      res.send(userbooking);
+    });
     app.get("/allproduckt", async (req, res) => {
       const catagor = req.query.catagory;
       console.log(catagor);
       const data = await produckt.find({ catagory: catagor }).toArray();
       res.send(data);
+    });
+    app.get("/users", async (req, res) => {
+      const email = req.query.email;
+      const token = jwttoken.sign({ email }, process.env.ACCESS_TOKEN, {
+        expiresIn: "2d",
+      });
+
+      res.send({
+        data: "",
+        token: token,
+      });
     });
     app.post("/users", async (req, res) => {
       const user = req.body;
@@ -64,25 +91,16 @@ const run = async () => {
         token: "",
       });
     });
-    app.get("/users", async (req, res) => {
-      const email = req.query.email;
-      const token = jwttoken.sign({ email }, process.env.ACCESS_TOKEN, {
-        expiresIn: "2h",
-      });
 
-      res.send({
-        data: "",
-        token: token,
-      });
-    });
     //produckt post
     app.post("/produckt", async (req, res) => {
       const rejult = await produckt.insertOne(req.body);
       res.send(rejult);
     });
     app.post("/customardetails", async (req, res) => {
-      const rejult = await customars.insertOne(req.body);
-      res.send(rejult);
+      console.log(req.body);
+      const rejultcustomar = await customars.insertOne(req.body);
+      res.send(rejultcustomar);
     });
   } finally {
   }
