@@ -1,6 +1,6 @@
 const express = require("express");
 const cors = require("cors");
-const { MongoClient, ServerApiVersion } = require("mongodb");
+const { MongoClient, ServerApiVersion, ObjectId } = require("mongodb");
 const jwttoken = require("jsonwebtoken");
 const { query } = require("express");
 const app = express();
@@ -40,11 +40,29 @@ const run = async () => {
       const decodedEmail = req.decoded.email;
       const quary = { email: decodedEmail };
       const user = await users.findOne(quary);
-      if (!user?.role) {
+      if (!user?.role === "admin") {
         return res.status(403).send({ message: "forbeden" });
       }
       next();
     };
+    const varifysalar = async (req, res, next) => {
+      const decodedEmail = req.decoded.email;
+      const quary = { email: decodedEmail };
+      const user = await users.findOne(quary);
+      if (!user?.role === "Seller") {
+        return res.status(403).send({ message: "forbeden" });
+      }
+      next();
+    };
+
+    app.get("/allbuyers", jwtVarifi, varifyAdmin, async (req, res) => {
+      const buyers = await users.find({ roll: "user" }).toArray();
+      res.send(buyers);
+    });
+    app.get("/allbsaller", jwtVarifi, varifyAdmin, async (req, res) => {
+      const allsaller = await users.find({ roll: "Seller" }).toArray();
+      res.send(allsaller);
+    });
     app.get("/allCatagory", jwtVarifi, async (req, res) => {
       const catagory = await allcatagori.find({}).toArray();
       res.send(catagory);
@@ -57,6 +75,12 @@ const run = async () => {
       const loginguser = await users.findOne({ email: req.query.email });
       res.send(loginguser);
     });
+    app.get("/mysalespost", jwtVarifi, varifysalar, async (req, res) => {
+      const myproduckt = await produckt
+        .find({ selaremail: req.query.email })
+        .toArray();
+      res.send(myproduckt);
+    });
 
     app.get("/usersbookings", jwtVarifi, async (req, res) => {
       const email = req.query.email;
@@ -66,9 +90,11 @@ const run = async () => {
       res.send(userbooking);
     });
     app.get("/allproduckt", async (req, res) => {
-      const catagor = req.query.catagory;
-      console.log(catagor);
-      const data = await produckt.find({ catagory: catagor }).toArray();
+      const id = req.query.id;
+      const catagory = await allcatagori.findOne({ _id: ObjectId(id) });
+      const data = await produckt
+        .find({ catagory: catagory.catagory })
+        .toArray();
       res.send(data);
     });
     app.get("/users", async (req, res) => {
@@ -93,7 +119,7 @@ const run = async () => {
     });
 
     //produckt post
-    app.post("/produckt", async (req, res) => {
+    app.post("/produckt", jwtVarifi, varifysalar, async (req, res) => {
       const rejult = await produckt.insertOne(req.body);
       res.send(rejult);
     });
