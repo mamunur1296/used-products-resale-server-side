@@ -63,11 +63,11 @@ const run = async () => {
       const allsaller = await users.find({ roll: "Seller" }).toArray();
       res.send(allsaller);
     });
-    app.get("/allCatagory", jwtVarifi, async (req, res) => {
+    app.get("/allCatagory", async (req, res) => {
       const catagory = await allcatagori.find({}).toArray();
       res.send(catagory);
     });
-    app.get("/alluerts", async (req, res) => {
+    app.get("/alluerts", jwtVarifi, varifyAdmin, async (req, res) => {
       const user = await users.find({}).toArray();
       res.send(user);
     });
@@ -108,13 +108,21 @@ const run = async () => {
         token: token,
       });
     });
-    app.post("/users", async (req, res) => {
+    app.put("/users", async (req, res) => {
       const user = req.body;
-
-      const rejult = await users.insertOne(user);
+      const email = req.query.email;
+      const filter = { email: email };
+      const options = { upsert: true };
+      const updatedDoc = {
+        $set: user,
+      };
+      const token = jwttoken.sign({ email }, process.env.ACCESS_TOKEN, {
+        expiresIn: "2d",
+      });
+      const rejult = await users.updateOne(filter, updatedDoc, options);
       res.send({
         data: rejult,
-        token: "",
+        token: token,
       });
     });
 
@@ -127,6 +135,27 @@ const run = async () => {
       console.log(req.body);
       const rejultcustomar = await customars.insertOne(req.body);
       res.send(rejultcustomar);
+    });
+    app.put("/salarVarify/:id", jwtVarifi, varifysalar, async (req, res) => {
+      const id = req.params.id;
+      console.log(id);
+      const filter = { _id: ObjectId(id) };
+      const option = { upsert: true };
+      const updatedDoc = {
+        $set: {
+          varify: true,
+        },
+      };
+      const rejult = await users.updateOne(filter, updatedDoc, option);
+      res.send(rejult);
+    });
+    app.delete("/userDeleit/:id", jwtVarifi, varifyAdmin, async (req, res) => {
+      const rejult = await users.deleteOne({ _id: ObjectId(req.params.id) });
+      res.send(rejult);
+    });
+    app.delete("/myproduckt/:id", jwtVarifi, varifysalar, async (req, res) => {
+      const rejult = await produckt.deleteOne({ _id: ObjectId(req.params.id) });
+      res.send(rejult);
     });
   } finally {
   }
