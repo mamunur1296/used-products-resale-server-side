@@ -5,9 +5,13 @@ const jwttoken = require("jsonwebtoken");
 const { query } = require("express");
 const app = express();
 require("dotenv").config();
+const stripe = require("stripe")(process.env.STRIP_KEY_TOKEN);
+console.log(process.env.STRIP_KEY_TOKEN);
 //meselWoore
 app.use(cors());
 app.use(express.json());
+app.use(express.static("public"));
+
 //mongo de conector
 
 const uri = process.env.URI;
@@ -36,6 +40,7 @@ const run = async () => {
     const produckt = client.db("assainment12").collection("produckt");
     const allcatagori = client.db("assainment12").collection("allcatagori");
     const customars = client.db("assainment12").collection("customars");
+    const paymentitem = client.db("assainment12").collection("payment");
     const varifyAdmin = async (req, res, next) => {
       const decodedEmail = req.decoded.email;
       const quary = { email: decodedEmail };
@@ -74,6 +79,12 @@ const run = async () => {
     app.get("/loginUser", async (req, res) => {
       const loginguser = await users.findOne({ email: req.query.email });
       res.send(loginguser);
+    });
+    app.get("/payment/:id", async (req, res) => {
+      const pay = await customars.findOne({
+        _id: ObjectId(req.params.id),
+      });
+      res.send(pay);
     });
     app.get("/mysalespost", jwtVarifi, varifysalar, async (req, res) => {
       const myproduckt = await produckt
@@ -125,14 +136,40 @@ const run = async () => {
         token: token,
       });
     });
+    app.post("/paymentitem", jwtVarifi, async (req, res) => {
+      const payment = req.body;
+      const rejult = await paymentitem.insertOne(payment);
+      const id = payment.bookingId;
 
+      const filter = { _id: ObjectId(id) };
+      const updatedDoc = {
+        $set: {
+          payment: true,
+          tranjuctionId: payment.tranjuctionId,
+        },
+      };
+      const updateRajult = await customars.updateOne(filter, updatedDoc);
+      res.send(rejult);
+    });
+    app.post("/create-payment-intent", jwtVarifi, async (req, res) => {
+      const booking = req.body;
+      const price = booking.price;
+      const amount = price * 100;
+      const paymentIntent = await stripe.paymentIntents.create({
+        currency: "usd",
+        amount: amount,
+        payment_method_types: ["card"],
+      });
+      res.send({
+        clientSecret: paymentIntent.client_secret,
+      });
+    });
     //produckt post
     app.post("/produckt", jwtVarifi, varifysalar, async (req, res) => {
       const rejult = await produckt.insertOne(req.body);
       res.send(rejult);
     });
     app.post("/customardetails", async (req, res) => {
-      console.log(req.body);
       const rejultcustomar = await customars.insertOne(req.body);
       res.send(rejultcustomar);
     });
