@@ -72,6 +72,10 @@ const run = async () => {
       const catagory = await allcatagori.find({}).toArray();
       res.send(catagory);
     });
+    app.get("/addItems", async (req, res) => {
+      const catagory = await produckt.find({ advertised: true }).toArray();
+      res.send(catagory);
+    });
     app.get("/allPayment", async (req, res) => {
       const payment = await paymentitem.find({}).toArray();
       res.send(payment);
@@ -139,6 +143,17 @@ const run = async () => {
         data: rejult,
         token: token,
       });
+    });
+    app.post("/advertised/:id", jwtVarifi, varifysalar, async (req, res) => {
+      const id = req.params.id;
+      const filter = { _id: ObjectId(id) };
+      const updatedDoc = {
+        $set: {
+          advertised: true,
+        },
+      };
+      const rejult = await produckt.updateOne(filter, updatedDoc);
+      res.send(rejult);
     });
     app.post("/paymentitem", jwtVarifi, async (req, res) => {
       const payment = req.body;
