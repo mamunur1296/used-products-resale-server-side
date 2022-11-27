@@ -72,6 +72,10 @@ const run = async () => {
       const catagory = await allcatagori.find({}).toArray();
       res.send(catagory);
     });
+    app.get("/allPayment", async (req, res) => {
+      const payment = await paymentitem.find({}).toArray();
+      res.send(payment);
+    });
     app.get("/alluerts", jwtVarifi, varifyAdmin, async (req, res) => {
       const user = await users.find({}).toArray();
       res.send(user);
@@ -140,7 +144,18 @@ const run = async () => {
       const payment = req.body;
       const rejult = await paymentitem.insertOne(payment);
       const id = payment.bookingId;
-
+      const producktId = payment.producktId;
+      const producktFilter = { _id: ObjectId(producktId) };
+      const producktUpdatedDoc = {
+        $set: {
+          payment: true,
+          tranjuctionId: payment.tranjuctionId,
+        },
+      };
+      const producktupdated = await produckt.updateOne(
+        producktFilter,
+        producktUpdatedDoc
+      );
       const filter = { _id: ObjectId(id) };
       const updatedDoc = {
         $set: {
@@ -175,7 +190,7 @@ const run = async () => {
     });
     app.put("/salarVarify/:id", jwtVarifi, varifysalar, async (req, res) => {
       const id = req.params.id;
-      console.log(id);
+
       const filter = { _id: ObjectId(id) };
       const option = { upsert: true };
       const updatedDoc = {
