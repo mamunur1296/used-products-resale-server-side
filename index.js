@@ -68,13 +68,17 @@ const run = async () => {
       const allsaller = await users.find({ roll: "Seller" }).toArray();
       res.send(allsaller);
     });
+    app.get("/salarsTohome", async (req, res) => {
+      const allsaller = await users.find({ varify: true }).limit(4).toArray();
+      res.send(allsaller);
+    });
     app.get("/allCatagory", async (req, res) => {
       const catagory = await allcatagori.find({}).toArray();
       res.send(catagory);
     });
     app.get("/addItems", async (req, res) => {
-      const catagory = await produckt.find({ advertised: true }).toArray();
-      res.send(catagory);
+      const adds = await produckt.find({ advertised: true }).toArray();
+      res.send(adds);
     });
     app.get("/allPayment", async (req, res) => {
       const payment = await paymentitem.find({}).toArray();
@@ -83,6 +87,10 @@ const run = async () => {
     app.get("/alluerts", jwtVarifi, varifyAdmin, async (req, res) => {
       const user = await users.find({}).toArray();
       res.send(user);
+    });
+    app.get("/repostitems", jwtVarifi, varifyAdmin, async (req, res) => {
+      const Report = await produckt.find({ report: true }).toArray();
+      res.send(Report);
     });
     app.get("/loginUser", async (req, res) => {
       const loginguser = await users.findOne({ email: req.query.email });
@@ -155,6 +163,17 @@ const run = async () => {
       const rejult = await produckt.updateOne(filter, updatedDoc);
       res.send(rejult);
     });
+    app.post("/repostToAdmin/:id", jwtVarifi, async (req, res) => {
+      const id = req.params.id;
+      const filter = { _id: ObjectId(id) };
+      const updatedDoc = {
+        $set: {
+          report: true,
+        },
+      };
+      const rejult = await produckt.updateOne(filter, updatedDoc);
+      res.send(rejult);
+    });
     app.post("/paymentitem", jwtVarifi, async (req, res) => {
       const payment = req.body;
       const rejult = await paymentitem.insertOne(payment);
@@ -203,10 +222,10 @@ const run = async () => {
       const rejultcustomar = await customars.insertOne(req.body);
       res.send(rejultcustomar);
     });
-    app.put("/salarVarify/:id", jwtVarifi, varifysalar, async (req, res) => {
-      const id = req.params.id;
+    app.put("/salarVarify/:id", jwtVarifi, varifyAdmin, async (req, res) => {
+      const email = req.params.id;
 
-      const filter = { _id: ObjectId(id) };
+      const filter = { email: email };
       const option = { upsert: true };
       const updatedDoc = {
         $set: {
@@ -214,8 +233,19 @@ const run = async () => {
         },
       };
       const rejult = await users.updateOne(filter, updatedDoc, option);
+      const filterProduckt = { selaremail: email };
+      const producktUpdate = {
+        $set: {
+          varify: true,
+        },
+      };
+      const producktrajult = await produckt.updateMany(
+        filterProduckt,
+        producktUpdate
+      );
       res.send(rejult);
     });
+
     app.delete("/userDeleit/:id", jwtVarifi, varifyAdmin, async (req, res) => {
       const rejult = await users.deleteOne({ _id: ObjectId(req.params.id) });
       res.send(rejult);
