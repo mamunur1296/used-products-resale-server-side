@@ -250,6 +250,17 @@ const run = async () => {
       const rejult = await users.deleteOne({ _id: ObjectId(req.params.id) });
       res.send(rejult);
     });
+    app.delete(
+      "/RepostdeleteDeleit/:id",
+      jwtVarifi,
+      varifyAdmin,
+      async (req, res) => {
+        const rejult = await produckt.deleteOne({
+          _id: ObjectId(req.params.id),
+        });
+        res.send(rejult);
+      }
+    );
     app.delete("/myproduckt/:id", jwtVarifi, varifysalar, async (req, res) => {
       const rejult = await produckt.deleteOne({ _id: ObjectId(req.params.id) });
       res.send(rejult);
@@ -266,7 +277,7 @@ app.get("/", (req, res) => {
       console.log("connect to mongodb");
     }
   });
-  res.send("hall server");
+  res.send("hall server i am working");
 });
 app.listen(process.env.PORT || 5000, () => {
   console.log("this server is reantin PORT ", process.env.PORT);
