@@ -92,6 +92,19 @@ const run = async () => {
       const Report = await produckt.find({ report: true }).toArray();
       res.send(Report);
     });
+
+    app.get("/users/admin/:email", async (req, res) => {
+      const email = req.params.email;
+      const user = await users.findOne({ email: email });
+      res.send({ isAdmin: user?.role === "admin" });
+    });
+    app.get("/users/seller/:email", async (req, res) => {
+      const email = req.params.email;
+      console.log(email);
+      const user = await users.findOne({ email: email });
+      res.send({ isAdmin: user?.role === "Seller" });
+    });
+
     app.get("/loginUser", async (req, res) => {
       const loginguser = await users.findOne({ email: req.query.email });
       res.send(loginguser);
@@ -183,6 +196,7 @@ const run = async () => {
       const producktUpdatedDoc = {
         $set: {
           payment: true,
+          addv: false,
           tranjuctionId: payment.tranjuctionId,
         },
       };
@@ -263,6 +277,11 @@ const run = async () => {
     );
     app.delete("/myproduckt/:id", jwtVarifi, varifysalar, async (req, res) => {
       const rejult = await produckt.deleteOne({ _id: ObjectId(req.params.id) });
+      res.send(rejult);
+    });
+    //Practice
+    app.delete("/deleteall", jwtVarifi, varifysalar, async (req, res) => {
+      const rejult = await customars.deleteOne({});
       res.send(rejult);
     });
   } finally {
