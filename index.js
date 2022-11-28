@@ -196,7 +196,7 @@ const run = async () => {
       const producktUpdatedDoc = {
         $set: {
           payment: true,
-          addv: false,
+          advertised: false,
           tranjuctionId: payment.tranjuctionId,
         },
       };
