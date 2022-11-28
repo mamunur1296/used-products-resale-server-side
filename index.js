@@ -20,6 +20,7 @@ const client = new MongoClient(uri, {
   useUnifiedTopology: true,
   serverApi: ServerApiVersion.v1,
 });
+//jwd token
 const jwtVarifi = (req, res, next) => {
   const authToken = req.headers.authorization;
   if (!authToken) {
@@ -34,6 +35,7 @@ const jwtVarifi = (req, res, next) => {
     next();
   });
 };
+// run function
 const run = async () => {
   try {
     const users = client.db("assainment12").collection("users");
@@ -41,6 +43,7 @@ const run = async () => {
     const allcatagori = client.db("assainment12").collection("allcatagori");
     const customars = client.db("assainment12").collection("customars");
     const paymentitem = client.db("assainment12").collection("payment");
+    //varify admin
     const varifyAdmin = async (req, res, next) => {
       const decodedEmail = req.decoded.email;
       const quary = { email: decodedEmail };
@@ -59,7 +62,7 @@ const run = async () => {
       }
       next();
     };
-
+    //gate api
     app.get("/allbuyers", jwtVarifi, varifyAdmin, async (req, res) => {
       const buyers = await users.find({ roll: "user" }).toArray();
       res.send(buyers);
@@ -148,6 +151,7 @@ const run = async () => {
         token: token,
       });
     });
+    //push api
     app.put("/users", async (req, res) => {
       const user = req.body;
       const email = req.query.email;
@@ -236,6 +240,7 @@ const run = async () => {
       const rejultcustomar = await customars.insertOne(req.body);
       res.send(rejultcustomar);
     });
+    //patch raning
     app.put("/salarVarify/:id", jwtVarifi, varifyAdmin, async (req, res) => {
       const email = req.params.id;
 
@@ -259,7 +264,7 @@ const run = async () => {
       );
       res.send(rejult);
     });
-
+    //deleit raning
     app.delete("/userDeleit/:id", jwtVarifi, varifyAdmin, async (req, res) => {
       const rejult = await users.deleteOne({ _id: ObjectId(req.params.id) });
       res.send(rejult);
@@ -298,6 +303,7 @@ app.get("/", (req, res) => {
   });
   res.send("hall server i am working");
 });
+// app raning
 app.listen(process.env.PORT || 5000, () => {
   console.log("this server is reantin PORT ", process.env.PORT);
 });
